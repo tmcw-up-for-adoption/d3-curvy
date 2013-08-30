@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <title></title>
         <link rel='stylesheet' type='text/css' href='css/style.css' />
+        <link rel='stylesheet' type='text/css' href='css/colorbrewer.css' />
         <meta http-equiv='content-type' content='text/html; charset=utf-8' />
         <meta name='viewport' content='initial-scale=1.0 maximum-scale=1.0'>
         <style>
@@ -61,31 +62,26 @@
           stroke: #fff;
           stroke-linejoin: round;
         }
-
-        .q0-9 { fill:rgb(247,251,255); }
-        .q1-9 { fill:rgb(222,235,247); }
-        .q2-9 { fill:rgb(198,219,239); }
-        .q3-9 { fill:rgb(158,202,225); }
-        .q4-9 { fill:rgb(107,174,214); }
-        .q5-9 { fill:rgb(66,146,198); }
-        .q6-9 { fill:rgb(33,113,181); }
-        .q7-9 { fill:rgb(8,81,156); }
-        .q8-9 { fill:rgb(8,48,107); }
-
         </style>
     </head>
     <body>
     <div class='curvy'>
         <div>
+            <small>color palette</small>
+            <select id="brewer"></select>
             <small>drag points to change the curve. double-click the curve
                 to add and remove points.</small>
         </div>
     </div>
     <div class='map'></div>
         <script src='js/d3.v3.min.js'></script>
+        <script src="js/colorbrewer.js"></script>
         <script src="http://d3js.org/topojson.v1.min.js"></script>
         <script src='index.js'></script>
         <script>
+var palette = "Blues";
+
+var palettes = d3.keys(colorbrewer).sort();
 
 var interp = function(x) { return x; }
 
@@ -100,14 +96,29 @@ var width = 960,
 
 var quantize = d3.scale.quantize()
     .domain([0, .15])
-    .range(d3.range(9).map(function(i) { return "q" + i + "-9"; }));
+    .range(d3.range(8).map(function(i) { return "q" + i + "-8"; }));
 
 var path = d3.geo.path()
     .projection(null);
 
 var svg = d3.select(".map").append("svg")
     .attr("width", width)
-    .attr("height", height);
+    .attr("height", height)
+    .attr("class", palette);
+
+var brewer = d3.select("#brewer")
+  .on("change", function(d) {
+    palette = this.selectedOptions[0].text;
+    svg.attr("class", palette);
+  });
+
+brewer
+  .selectAll("option")
+  .data(palettes)
+  .enter().append("option")
+  .text(function(d) { return d; })
+  .filter(function(d) { return d == palette; })
+  .attr("selected", "selected");
 
 d3.json("us.json", function(error, us) {
   svg.append("g")
